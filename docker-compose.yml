@@ -1,0 +1,12 @@
+version: '2'
+services:
+    mongo:
+      image: mongo
+      ports:
+        - "27017:27017"
+      environment:
+        - "MONGO_INITDB_DATABASE=arrival-time-service"
+        - "MONGO_INITDB_ROOT_USERNAME=arrival-time-service-user"
+        - "MONGO_INITDB_ROOT_PASSWORD=arrival-time-service-pass"
+      volumes:
+        - ./migrations:/docker-entrypoint-initdb.d
