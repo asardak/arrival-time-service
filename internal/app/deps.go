@@ -18,5 +18,5 @@ type CarService interface {
 }
 
 type PredictService interface {
-	GetTimeMin(ctx context.Context, point Point, cars []*Car) ([]int64, error)
+	GetTime(ctx context.Context, point Point, cars []*Car) ([]int64, error)
 }

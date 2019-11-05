@@ -7,14 +7,14 @@ import (
 )
 
 type ArrivalTimeService struct {
-	cars   CarService
-	routes PredictService
+	cars       CarService
+	prediction PredictService
 }
 
 func NewArrivalTimeService(cars CarService, routes PredictService) *ArrivalTimeService {
 	return &ArrivalTimeService{
-		cars:   cars,
-		routes: routes,
+		cars:       cars,
+		prediction: routes,
 	}
 }
 
@@ -28,9 +28,9 @@ func (a *ArrivalTimeService) GetArrivalTime(ctx context.Context, point Point) (i
 		return 0, errors.New("no cars available")
 	}
 
-	durations, err := a.routes.GetTimeMin(ctx, point, cars)
+	durations, err := a.prediction.GetTime(ctx, point, cars)
 	if err != nil {
-		return 0, fmt.Errorf(`failed to get routes, err: %w`, err)
+		return 0, fmt.Errorf(`failed to get prediction, err: %w`, err)
 	}
 
 	min := durations[0]

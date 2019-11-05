@@ -1,16 +1,25 @@
-TMP_DIR:=/tmp/swagger-go-$(shell head -n 1 /dev/urandom | md5)
 BIN=$(PWD)/bin
 
 bin/swagger:
-	mkdir $(TMP_DIR)
-	git clone https://github.com/go-swagger/go-swagger $(TMP_DIR)
-	cd $(TMP_DIR) && GOBIN=$(BIN) go install ./cmd/swagger
+	GO111MODULE=off go get -d github.com/go-swagger/go-swagger
+	cd $(GOPATH) && GOBIN=$(BIN) go install github.com/go-swagger/go-swagger/cmd/swagger
 
-generate: bin/swagger
-	$(BIN)/swagger generate client -t ./pkg/car-service -f ./pkg/car-service/swagger.yml
-	$(BIN)/swagger generate client -t ./pkg/predict-service -f ./pkg/predict-service/swagger.yml
+bin/mockery:
+	GO111MODULE=off GOBIN=$(BIN) go get github.com/vektra/mockery/.../
+
+bin/golangci-lint:
+	GO111MODULE=off GOBIN=$(BIN) go get github.com/golangci/golangci-lint/cmd/golangci-lint
+
+generate: bin/swagger bin/mockery
+	bin/swagger generate client -t ./pkg/car-service -f ./pkg/car-service/swagger.yml
+	bin/swagger generate client -t ./pkg/predict-service -f ./pkg/predict-service/swagger.yml
+	bin/mockery -dir ./internal -all -output ./internal/test/mocks
 
 run:
 	go run ./cmd/arrival-time-service
 
-.PHONY: generate run
+test: bin/golangci-lint
+	bin/golangci-lint run
+	go test --tags=db ./...
+
+.PHONY: generate run test

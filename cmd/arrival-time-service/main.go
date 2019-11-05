@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"os"
+	"time"
 
 	"github.com/asardak/arrival-time-service/internal/app"
 	"github.com/asardak/arrival-time-service/internal/pkg/api"
@@ -27,7 +28,7 @@ func main() {
 	cars := makeCarServiceClient(c)
 	prediction := makePredictClient(c)
 	arrivalTimeService := app.NewArrivalTimeService(cars, prediction)
-	repo := db.NewRepository(conn, c.DatabaseName, c.CollectionName, c.SearchRadius)
+	repo := db.NewRepository(conn, c.DatabaseName, c.CollectionName, c.SearchRadius, c.RouteTTL())
 	cachedService := app.NewCachedService(arrivalTimeService, repo)
 	router := api.NewRouter(cachedService)
 	server := makeServer(router)
@@ -49,6 +50,11 @@ type config struct {
 	DatabaseName           string `split_words:"true"`
 	CollectionName         string `split_words:"true"`
 	SearchRadius           int    `split_words:"true"`
+	RouteTTLMinutes        int    `split_words:"true"`
+}
+
+func (c config) RouteTTL() time.Duration {
+	return time.Duration(c.RouteTTLMinutes) * time.Minute
 }
 
 const envPrefix = "ARRIVAL_TIME_SERVICE"

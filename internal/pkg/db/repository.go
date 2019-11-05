@@ -12,12 +12,13 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-type Point struct {
+type Route struct {
 	Location struct {
 		Type        string     `json:"type"`
 		Coordinates [2]float64 `json:"coordinates"`
 	} `json:"location"`
-	Time int64 `json:"time"`
+	Time     int64     `json:"time"`
+	ExpireAt time.Time `json:"expireAt"`
 }
 
 type Repository struct {
@@ -25,14 +26,16 @@ type Repository struct {
 	db             string
 	collectionName string
 	searchRadius   int
+	routeTTL       time.Duration
 }
 
-func NewRepository(client *mongo.Client, db string, collection string, searchRadius int) *Repository {
+func NewRepository(client *mongo.Client, db string, collection string, searchRadius int, routeTTL time.Duration) *Repository {
 	return &Repository{
 		client:         client,
 		db:             db,
 		collectionName: collection,
 		searchRadius:   searchRadius,
+		routeTTL:       routeTTL,
 	}
 }
 
@@ -49,9 +52,13 @@ func (r *Repository) FindRoute(ctx context.Context, point app.Point) (app.Route,
 		},
 	}
 
-	var res Point
+	var res Route
 	err := r.collection().FindOne(ctx, filter).Decode(&res)
 	if err == nil {
+		if res.ExpireAt.Before(time.Now()) {
+			return app.Route{}, app.ErrRouteNotFound
+		}
+
 		return app.Route{
 			Point: app.Point{
 				Lat: res.Location.Coordinates[1],
@@ -75,7 +82,7 @@ func (r *Repository) SaveRoute(ctx context.Context, route app.Route) error {
 			"type":        "Point",
 			"coordinates": bson.A{route.Lng, route.Lat},
 		},
-		"expireAt": time.Now().Add(time.Minute),
+		"expireAt": time.Now().Add(r.routeTTL),
 	})
 
 	return err

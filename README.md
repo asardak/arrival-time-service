@@ -8,6 +8,7 @@ Requirements
 
 Make targets:
 * `make generate` - generate go-clients by its swagger-specification
+* `make test` - run linter and test suite
 * `make run` - run service
 
 ### Development environment
@@ -22,7 +23,8 @@ Make targets:
     * `ARRIVAL_TIME_SERVICE_DATABASE_NAME` - MongoDB database path 
     * `ARRIVAL_TIME_SERVICE_COLLECTION_NAME` - MongoDB collection name for storing routes
     * `ARRIVAL_TIME_SERVICE_SEARCH_RADIUS` - a radius within searching of stored routes allowed
+    * `ARRIVAL_TIME_SERVICE_ROUTE_TTL_MINUTES` - a TTL of cached route
     
-    An example `.env` filed available in `.env.example`
+    An example of `.env` is available in `.env.example`
 
 2. Execute `docker-compose up` to launch a Mongo server in docker-container

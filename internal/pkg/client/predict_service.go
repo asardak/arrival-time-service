@@ -24,7 +24,7 @@ func NewPredictService(client PredictServiceClient) *PredictService {
 	}
 }
 
-func (s *PredictService) GetTimeMin(ctx context.Context, point app.Point, cars []*app.Car) ([]int64, error) {
+func (s *PredictService) GetTime(ctx context.Context, point app.Point, cars []*app.Car) ([]int64, error) {
 	positions := make([]models.Position, 0, len(cars))
 	for _, c := range cars {
 		positions = append(positions, models.Position{
